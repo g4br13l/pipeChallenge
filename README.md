@@ -1,54 +1,25 @@
-# React + TypeScript + Vite
+# PipeChallenge a Real code Challenge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# React Toggle
 
-Currently, two official plugins are available:
+![react-toggle](https://user-images.githubusercontent.com/1542831/101417895-57f32080-38cb-11eb-8bb6-c493f1cedbaa.gif)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Fork this project to start;
 
-## Expanding the ESLint configuration
+2. In the "Toggle.jsx", when "false" should shows the text "Off to sleep." and "true" should shows the text "On fire for the party!";
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. The text "Off to sleep." should be "blue" and the text "On fire for the party!" show be "red";
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+4. The initial value should be always "true";
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+5. Show a title element using "h1" tag with the initial value "Switch Component".
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+6. In the "App.jsx" should render 3 switches where the first one should have the title "General Controller";
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+7. The "General Controller" component should share the state and control the others;
+
+8. Include React performance improvements;
+
+9. Don't forget to add tests;
+
+10. Move all files to TypeScript;
