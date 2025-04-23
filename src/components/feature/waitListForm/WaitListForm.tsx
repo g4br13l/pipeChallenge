@@ -14,8 +14,13 @@ import {
 type handleGenericToggleCheckedFnT = (fieldName: string) => void
 
 
+type WaitListFormPropsT = {
+  handleFormSubmit: (value: WaitListFormFieldsT) => void
+}
 
-export function WaitListForm() {
+
+export function WaitListForm({ handleFormSubmit }: WaitListFormPropsT) {
+
 
   const [checkedState, setCheckedState] = useState<WaitListFormCheckableFieldsT>({
     allNotifications: true,
@@ -55,12 +60,9 @@ export function WaitListForm() {
     validators: {
       onSubmit: waitListFormSchema
     },
-    onSubmit: ({ value }) => {
-      console.log('(formSubmit) value:', value)
-    },
+    onSubmit: ({ value }) => handleFormSubmit(value),
     asyncDebounceMs: 500,
   })
-
 
 
   return (

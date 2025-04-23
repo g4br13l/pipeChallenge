@@ -1,9 +1,14 @@
 import { WaitListForm } from "./components/feature/waitListForm/WaitListForm"
+import { WaitListFormFieldsT } from "./components/feature/waitListForm/WaitListFormData"
 import { TopMenu } from "./components/layout/TopMenu"
 
 
 
 function App() {
+
+  function handleFormSubmit(value: WaitListFormFieldsT) {
+    console.log('(formSubmit) value:', value)
+  }
 
   return (
 
@@ -16,7 +21,7 @@ function App() {
           <h3>
             Waiting list registration
           </h3>
-          <WaitListForm />
+          <WaitListForm handleFormSubmit={handleFormSubmit} />
         </div>
       </div>
 

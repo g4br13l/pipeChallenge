@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react"
-import { WaitListForm } from "./WaitListForm"
 import userEvent from "@testing-library/user-event"
+import { log } from "console"
+import { WaitListForm } from "./WaitListForm"
+import { WaitListFormFieldsT } from "./WaitListFormData"
 
 
 
@@ -18,40 +20,70 @@ describe('WaitListForm component tests', () => {
     email: 'gab@com',
     phoneTooShort: '219888877',
     phoneTooLong: '219888877776'
-
+  }
+  const formSubmissionValidData = {
+    name: 'Gabriel',
+    email: 'gabriel@email.com',
+    phone: '(21) 98888-7777',
+    allNotifications: true,
+    allowPhoneCall: true,
+    emailNotifications: true,
+    smsNotifications: true,
   }
 
+  const formProps = {
+    handleSubmitMockFn: (value: WaitListFormFieldsT) => {
+      log('(handleSubmitMockFn) value:', value)
+    }
+  }
+  const handleOnSubmitFormSpy = vi.spyOn(formProps, 'handleSubmitMockFn')
+
+  type ElementsT = {
+    inputName: HTMLElement
+    inputEmail: HTMLElement
+    inputPhone: HTMLElement
+    submitButton: HTMLElement
+    allNotiCheckbox: HTMLElement
+    emailNotiCheckbox: HTMLElement
+    smsNotiCheckbox: HTMLElement
+    allowPhoneCall: HTMLElement
+  }
+
+  const getElements = (): ElementsT => ({
+    inputName: screen.getByRole('textbox', { name: /name/i }),
+    inputEmail: screen.getByRole('textbox', { name: /email/i }),
+    inputPhone: screen.getByRole('textbox', { name: /phone/i }),
+    submitButton: screen.getByRole('button'),
+    allNotiCheckbox: screen.getByRole('checkbox', { name: /All notifications/i, checked: true }),
+    emailNotiCheckbox:
+      screen.getByRole('checkbox', { name: /email notifications/i, checked: true }),
+    smsNotiCheckbox: screen.getByRole('checkbox', { name: /sms notifications/i, checked: true }),
+    allowPhoneCall: screen.getByRole('checkbox', { name: /allow phone call/i, checked: true }),
+  })
+
   beforeEach(() => {
-    render(<WaitListForm />)
+    render(<WaitListForm handleFormSubmit={formProps.handleSubmitMockFn} />)
   })
 
   it('should render the WaitListForm component', () => {
-    // arrange
-    //screen.debug()
-    // act
-    const inputName = screen.getByRole('textbox', { name: /name/i })
-    const inputEmail = screen.getByRole('textbox', { name: /email/i })
-    const inputPhone = screen.getByRole('textbox', { name: /phone/i })
-    const button = screen.getByRole('button')
+    // arrange // act
+    const { inputName, inputEmail, inputPhone, submitButton } = getElements()
     // assert
-    expect(inputName).toBeInTheDocument()
-    expect(inputEmail).toBeInTheDocument()
-    expect(inputPhone).toBeInTheDocument()
-    expect(button).toBeInTheDocument()
-    expect(button).toHaveTextContent(/save/i)
+    expect(inputName).toBeVisible()
+    expect(inputEmail).toBeVisible()
+    expect(inputPhone).toBeVisible()
+    expect(submitButton).toBeVisible()
+    expect(submitButton).toHaveTextContent(/save/i)
   })
 
   describe('Success submission tests', () => {
 
-    it('should fullfil all inputs with valid data', async () => {
-      // arrange
-      // act
+    it('should fill all inputs with valid data', async () => {
+      // arrange // act
+      const { inputName, inputEmail, inputPhone } = getElements()
       const user = userEvent.setup()
-      const inputName = screen.getByRole('textbox', { name: /name/i })
       await user.type(inputName, validData.name)
-      const inputEmail = screen.getByRole('textbox', { name: /email/i })
       await user.type(inputEmail, validData.email)
-      const inputPhone = screen.getByRole('textbox', { name: /phone/i })
       await user.type(inputPhone, validData.phone)
       // assert
       expect(inputName).toHaveValue(validData.name)
@@ -59,79 +91,164 @@ describe('WaitListForm component tests', () => {
       expect(inputPhone).toHaveValue(validData.maskedPhone)
     })
 
-    it('should submit the form with valid values filled', async () => {
+    it('should submit the form successfully when filled with valid data', async () => {
       // arrange
       // act - form fields
+      const { inputName, inputEmail, inputPhone, submitButton } = getElements()
       const user = userEvent.setup()
-      const inputName = screen.getByRole('textbox', { name: /name/i })
       await user.type(inputName, validData.name)
-      const inputEmail = screen.getByRole('textbox', { name: /email/i })
       await user.type(inputEmail, validData.email)
-      const inputPhone = screen.getByRole('textbox', { name: /phone/i })
       await user.type(inputPhone, invalidData.phoneTooLong)
       // act - form submission
-      const submitButton = screen.getByRole('button', { name: /Save/i })
       await user.click(submitButton)
       const successMessage = screen.getByRole('strong')
       // assert
-      expect(successMessage).toBeInTheDocument()
+      expect(handleOnSubmitFormSpy).toHaveBeenCalledOnce()
+      expect(handleOnSubmitFormSpy).toHaveBeenCalledWith(formSubmissionValidData)
+      expect(successMessage).toBeVisible()
     })
 
   })
 
-  describe('Fail submitting invalid values', () => {
+  describe('Fail submission tests', () => {
 
     it('should show an error when submit a name with less than 3 characters', async () => {
-      // arrange
-      // act
+      // arrange // act
+      const { inputName, submitButton } = getElements()
       const user = userEvent.setup()
-      const inputName = screen.getByRole('textbox', { name: /name/i })
       await user.type(inputName, invalidData.nameTooShort)
-      const submitButton = screen.getByRole('button', { name: /Save/i })
       await user.click(submitButton)
-      screen.debug()
       const errorText = screen.getByText(/at least 3 character/i)
       // assert
-      expect(errorText).toBeInTheDocument()
+      expect(handleOnSubmitFormSpy).not.toHaveBeenCalled()
+      expect(errorText).toBeVisible()
     })
 
     it('should show an error when submit a name with more than 30 characters', async () => {
-      // arrange
-      // act
+      // arrange // act
+      const { inputName, submitButton } = getElements()
       const user = userEvent.setup()
-      const inputName = screen.getByRole('textbox', { name: /name/i })
       await user.type(inputName, invalidData.nameTooLong)
-      const submitButton = screen.getByRole('button', { name: /Save/i })
       await user.click(submitButton)
       const errorText = screen.getByText(/at most 30 character/i)
       // assert
-      expect(errorText).toBeInTheDocument()
+      expect(handleOnSubmitFormSpy).not.toHaveBeenCalled()
+      expect(errorText).toBeVisible()
     })
 
     it('should show an error when submit a invalid email', async () => {
-      // arrange
-      // act
+      // arrange // act
+      const { inputEmail, submitButton } = getElements()
       const user = userEvent.setup()
-      const inputEmail = screen.getByRole('textbox', { name: /email/i })
       await user.type(inputEmail, invalidData.email)
-      const submitButton = screen.getByRole('button', { name: /Save/i })
       await user.click(submitButton)
       const errorText = screen.getByText(/invalid email/i)
       // assert
-      expect(errorText).toBeInTheDocument()
+      expect(handleOnSubmitFormSpy).not.toHaveBeenCalled()
+      expect(errorText).toBeVisible()
     })
 
     it('should show an error when submit a phone number too short', async () => {
-      // arrange
-      // act
+      // arrange // act
+      const { inputPhone, submitButton } = getElements()
       const user = userEvent.setup()
-      const inputPhone = screen.getByRole('textbox', { name: /phone/i })
       await user.type(inputPhone, invalidData.phoneTooShort)
-      const submitButton = screen.getByRole('button', { name: /Save/i })
       await user.click(submitButton)
       const errorText = screen.getByText(/Invalid phone/i)
       // assert
-      expect(errorText).toBeInTheDocument()
+      expect(handleOnSubmitFormSpy).not.toHaveBeenCalled()
+      expect(errorText).toBeVisible()
+    })
+
+  })
+
+  describe('Permissions checkboxes tests', () => {
+
+    it('should render all Permissions checkbox checked', () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      //assert
+      expect(allNotiCheckbox).toBeVisible()
+      expect(emailNotiCheckbox).toBeVisible()
+      expect(smsNotiCheckbox).toBeVisible()
+      expect(allowPhoneCall).toBeVisible()
+    })
+
+    it('should uncheck all notifications checkbox when parent is unchecked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(allNotiCheckbox)
+      //assert
+      expect(allNotiCheckbox).not.toBeChecked()
+      expect(emailNotiCheckbox).not.toBeChecked()
+      expect(smsNotiCheckbox).not.toBeChecked()
+      expect(allowPhoneCall).toBeChecked()
+    })
+
+    it('should check all notifications parent is checked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(allNotiCheckbox)
+      await user.click(allNotiCheckbox)
+      //assert
+      expect(allNotiCheckbox).toBeChecked()
+      expect(emailNotiCheckbox).toBeChecked()
+      expect(smsNotiCheckbox).toBeChecked()
+      expect(allowPhoneCall).toBeChecked()
+    })
+
+    it('should uncheck parent checkbox when all children are unchecked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(emailNotiCheckbox)
+      await user.click(smsNotiCheckbox)
+      //assert
+      expect(allNotiCheckbox).not.toBeChecked()
+      expect(emailNotiCheckbox).not.toBeChecked()
+      expect(smsNotiCheckbox).not.toBeChecked()
+      expect(allowPhoneCall).toBeChecked()
+    })
+
+    it('should check parent checkbox when all children are checked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(allNotiCheckbox)
+      await user.click(emailNotiCheckbox)
+      await user.click(smsNotiCheckbox)
+      //assert
+      expect(allNotiCheckbox).toBeChecked()
+      expect(emailNotiCheckbox).toBeChecked()
+      expect(smsNotiCheckbox).toBeChecked()
+      expect(allowPhoneCall).toBeChecked()
+    })
+
+    it('should uncheck "phone call" checkbox when clicked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(allowPhoneCall)
+      //assert
+      expect(allNotiCheckbox).toBeChecked()
+      expect(emailNotiCheckbox).toBeChecked()
+      expect(smsNotiCheckbox).toBeChecked()
+      expect(allowPhoneCall).not.toBeChecked()
+    })
+
+    it('should check "phone call" checkbox when clicked', async () => {
+      // arrange // act
+      const { allNotiCheckbox, emailNotiCheckbox, smsNotiCheckbox, allowPhoneCall } = getElements()
+      const user = userEvent.setup()
+      await user.click(allowPhoneCall)
+      await user.click(allowPhoneCall)
+      //assert
+      expect(allNotiCheckbox).toBeChecked()
+      expect(emailNotiCheckbox).toBeChecked()
+      expect(smsNotiCheckbox).toBeChecked()
+      expect(allowPhoneCall).toBeChecked()
     })
 
   })
